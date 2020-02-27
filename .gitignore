@@ -1,0 +1,7 @@
+.cache
+dist/
+
+node_modules
+Todo.md
+.now
+.env.prod
