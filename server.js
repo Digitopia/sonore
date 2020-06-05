@@ -58,4 +58,15 @@ io.on('connection', socket => {
     }
   })
 
+  socket.on('setcolor', data => {
+    if (socket.handshake.query && socket.handshake.query.producer === '1') {
+      const secret = socket.handshake.headers.authorization
+      if (secret === process.env.SONORE_SECRET_KEY) {
+        io.emit('color', { data })
+      }
+    } else {
+      console.log('failed authentication to update sonore data')
+    }
+  })
+
 })

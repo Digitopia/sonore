@@ -19,9 +19,13 @@ const s = sketch => {
   const socket = io.connect(api_url);
   console.log('socket', socket)
   socket.on("data", data => {
-    console.log('got new data')
+    console.info('got new data')
     BARS = data.data;
-    console.log('BARS is now', BARS)
+    console.info('BARS is now', BARS)
+  });
+
+  socket.on("color", data => {
+    console.log('got color', color)
   });
 
   window.io = io
