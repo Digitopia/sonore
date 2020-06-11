@@ -6,6 +6,10 @@ const s = sketch => {
   const BAR_HEIGHT = 250;
 
   let BARS = Array(NBARS).fill(0);
+  let COLOR = '#3463b6'
+  let COLOR_FROM = ''
+  let COLOR_TO = ''
+  let COLOR_LERP = 0 // goes from 0 to 1 (see lerpColor() p5.js for more info)
 
   const api_url = process.env.SONORE_SERVER_URL;
   console.log({ api_url });
@@ -19,8 +23,18 @@ const s = sketch => {
   const socket = io.connect(api_url);
   console.log('socket', socket)
   socket.on("data", data => {
-    console.info('got new data')
-    BARS = data.data;
+    console.info('got new data', data.data)
+      const receivedColor = data.data.length === 9 ? data.data.pop() : '#cccccc'
+      if (receivedColor !== COLOR_TO) {
+        console.log('new color', receivedColor)
+        COLOR_TO = receivedColor
+        COLOR_FROM = COLOR
+        COLOR_LERP = 0
+        // version where interpolate background
+        // document.querySelector('.p5Canvas').style.background = possibleNewColor
+        // COLOR = possibleNewColor
+      }
+    BARS = data.data
     console.info('BARS is now', BARS)
   });
 
@@ -46,7 +60,7 @@ const s = sketch => {
     // bar_value: float [0-1]
 
     sketch.createCanvas(sketch.windowWidth, sketch.windowHeight);
-    sketch.background(100, 100, 100);
+    // sketch.background(100, 100, 100);
     // frameRate(50)
   }
 
@@ -63,35 +77,63 @@ const s = sketch => {
     }
   }
 
+  sketch.windowResized = () => {
+    console.log('resized!')
+    sketch.resizeCanvas(sketch.windowWidth, sketch.windowHeight);
+  }
+
   sketch.drawBar = (idx) => {
-    const x = idx * (BAR_WIDTH + BAR_SPACING) + 350;
+
+    const barsWidth = NBARS * BAR_WIDTH + (NBARS-1) * BAR_SPACING
+    const offset = sketch.windowWidth/2 - barsWidth/2
+
+    const x = idx * (BAR_WIDTH + BAR_SPACING) + offset;
     const w = BAR_WIDTH;
-    const y = 100;
+    const y = sketch.windowHeight/2 - BAR_HEIGHT/2;
     const val = BARS[idx];
     const h = sketch.map(val, 0, 1, 0, BAR_HEIGHT);
     const y2 = y + BAR_HEIGHT - h;
 
+    // first empty rect
+    sketch.push();
+    sketch.fill(255);
+    sketch.noStroke();
+    sketch.rect(x, y, w, BAR_HEIGHT);
+    sketch.pop();
+
+    // fill
+    sketch.push();
+    sketch.fill(COLOR);
+    sketch.noStroke();
+    sketch.rect(x, y2, w, h);
+    sketch.pop();
+    // console.log({val, h})
+
     // border
     sketch.push();
-    sketch.stroke(200);
+    sketch.stroke(0);
     sketch.noFill();
     sketch.rect(x, y, w, BAR_HEIGHT);
     sketch.pop();
     // console.log({x, y, w, h: BAR_HEIGHT})
 
-    // fill
-    sketch.push();
-    sketch.fill(255);
-    sketch.noStroke();
-    sketch.rect(x, y2, w, h);
-    sketch.pop();
-    // console.log({val, h})
   }
 
   sketch.draw = () => {
-    sketch.background(100);
+    // sketch.background(100);
+    // console.log('COLOR is', COLOR)
+    // const c = sketch.color(`#${COLOR}`)
+    // sketch.background(c);
 
     // update()
+    // interpolate color before drawing
+    if (COLOR_LERP < 1.0) {
+      COLOR = sketch.lerpColor(sketch.color(COLOR_FROM), sketch.color(COLOR_TO), COLOR_LERP)
+      COLOR_LERP += 0.01
+      console.log('lerping', COLOR)
+    }
+    // console.log('not lerping', COLOR)
+
     sketch.drawBars();
   }
 

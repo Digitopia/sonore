@@ -2,6 +2,7 @@ require('dotenv').config()
 
 const axios = require('axios')
 const io = require('socket.io-client')
+const c = randomColor()
 
 function generateFakeData() {
   return [
@@ -13,7 +14,18 @@ function generateFakeData() {
     Math.random(),
     Math.random(),
     Math.random(),
+    mayGetRandomColor(),
   ]
+}
+
+function mayGetRandomColor() {
+  if (Math.random() > 0.75) return randomColor()
+  return c
+}
+
+function randomColor() {
+  const hex = Math.floor(Math.random()*16777215).toString(16);
+  return `#${hex}`
 }
 
 // TODO: use namespaces instead
@@ -51,4 +63,4 @@ setInterval(() => {
   // Websocket version
   socket.emit('setdata', data)
 
-}, 50)
+}, 1000)
