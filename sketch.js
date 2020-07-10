@@ -96,7 +96,7 @@ const s = sketch => {
 
     // first empty rect
     sketch.push();
-    sketch.fill(255, 30);
+    sketch.fill(255);
     sketch.noStroke();
     sketch.rect(x, y, w, BAR_HEIGHT);
     sketch.pop();
